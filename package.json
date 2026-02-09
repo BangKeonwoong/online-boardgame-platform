@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "check": "npm run build && npm run test",
     "generate:vectors": "tsx scripts/generate-test-vectors.ts",
-    "validate:vectors": "tsx scripts/validate-test-vectors.ts"
+    "validate:vectors": "tsx scripts/validate-test-vectors.ts",
+    "smoke:remote": "tsx scripts/smoke-test-remote.ts"
   },
   "dependencies": {
     "fastify": "^5.2.1"

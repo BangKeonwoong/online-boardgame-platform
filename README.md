@@ -52,12 +52,33 @@ This repository includes `render.yaml` for web service deployment.
 - Start command: `npm run start`
 - Health check path: `/health`
 
+### Manual Deployment Steps (Render Dashboard)
+1. Open Render and click `New +` -> `Blueprint`.
+2. Connect GitHub account and select repo: `BangKeonwoong/online-boardgame-platform`.
+3. Confirm blueprint file `render.yaml` is detected, then deploy.
+4. After deployment completes, open service URL and verify:
+   - `GET /health`
+   - `GET /api/v1/test-vectors/splendor`
+   - `POST /api/v1/matches`
+5. Create Deploy Hook in Render service settings and copy the URL.
+6. Add GitHub secret in this repo:
+   - Name: `RENDER_DEPLOY_HOOK_URL`
+   - Value: copied deploy hook URL
+7. Push to `main` and confirm GitHub Actions `CI` then `Deploy Render` succeed.
+
 ## GitHub Actions
 - CI workflow: `.github/workflows/ci.yml`
 - Render deploy workflow: `.github/workflows/deploy-render.yml`
 
 Set GitHub secret:
 - `RENDER_DEPLOY_HOOK_URL`: Deploy hook URL from Render service settings.
+
+## Remote Smoke Test
+After Render URL is issued:
+
+```bash
+BASE_URL=https://your-service.onrender.com npm run smoke:remote
+```
 
 ## Notes
 - Test vectors are scenario-driven artifacts for implementing reducers and validators.
