@@ -1,0 +1,868 @@
+{
+  "gameId": "gostop",
+  "rulesetVersion": "kr-gostop-core-v1",
+  "scenarioCounts": {
+    "normal": 10,
+    "illegal": 10,
+    "edge": 10
+  },
+  "initialStates": {
+    "mode_3p_opening": {
+      "phase": "main_turn",
+      "mode": "gostop_3p",
+      "currentPlayerId": "p1",
+      "turnStage": "play_hand"
+    },
+    "mode_2p_mid": {
+      "phase": "main_turn",
+      "mode": "matgo_2p",
+      "currentPlayerId": "p2",
+      "turnStage": "play_hand"
+    },
+    "scoring_decision": {
+      "phase": "score_decision",
+      "mode": "gostop_3p",
+      "currentPlayerId": "p1",
+      "scoreP1": 7
+    }
+  },
+  "scenarios": [
+    {
+      "id": "normal-01",
+      "kind": "normal",
+      "title": "Play matching month and capture",
+      "description": "Single-match capture from table.",
+      "initialStateRef": "mode_3p_opening",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLAY_HAND_CARD",
+          "payload": {
+            "cardId": "jan-ribbon",
+            "matchingTableCardId": "jan-junk"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "captured cards count for p1 increases"
+        ]
+      }
+    },
+    {
+      "id": "normal-02",
+      "kind": "normal",
+      "title": "Play non-matching card to table",
+      "description": "No match places card on table.",
+      "initialStateRef": "mode_3p_opening",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLAY_HAND_CARD",
+          "payload": {
+            "cardId": "apr-animal",
+            "noMatch": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "table card count increases by 1"
+        ]
+      }
+    },
+    {
+      "id": "normal-03",
+      "kind": "normal",
+      "title": "Choose capture target among two matches",
+      "description": "Player chooses one when multiple same-month options exist.",
+      "initialStateRef": "mode_3p_opening",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "CHOOSE_CAPTURE_TARGET",
+          "payload": {
+            "fromTableCardId": "aug-junk-2"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "selected table card removed"
+        ]
+      }
+    },
+    {
+      "id": "normal-04",
+      "kind": "normal",
+      "title": "Draw card and resolve immediate capture",
+      "description": "Post-play draw path captures matching month.",
+      "initialStateRef": "mode_3p_opening",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "DRAW_FROM_PILE",
+          "payload": {
+            "forcedCardId": "nov-bright",
+            "matchingTableCardId": "nov-junk"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "draw pile decremented"
+        ]
+      }
+    },
+    {
+      "id": "normal-05",
+      "kind": "normal",
+      "title": "Enter score decision at threshold",
+      "description": "Score reaches go/stop threshold.",
+      "initialStateRef": "mode_3p_opening",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLAY_HAND_CARD",
+          "payload": {
+            "cardId": "bird-ribbon",
+            "scoreAfter": 7
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "score_decision",
+        "winners": [],
+        "stateAssertions": [
+          "turnStage transitions to score_decision"
+        ]
+      }
+    },
+    {
+      "id": "normal-06",
+      "kind": "normal",
+      "title": "Declare GO and continue",
+      "description": "Player chooses go after threshold.",
+      "initialStateRef": "scoring_decision",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "DECLARE_GO",
+          "payload": {},
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "goCount for p1 increments"
+        ]
+      }
+    },
+    {
+      "id": "normal-07",
+      "kind": "normal",
+      "title": "Declare STOP and finish",
+      "description": "Player ends match and receives payout.",
+      "initialStateRef": "scoring_decision",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "DECLARE_STOP",
+          "payload": {},
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p1"
+        ],
+        "stateAssertions": [
+          "status finished"
+        ]
+      }
+    },
+    {
+      "id": "normal-08",
+      "kind": "normal",
+      "title": "Matgo two-player alternating turn",
+      "description": "Turn passes correctly in two-player mode.",
+      "initialStateRef": "mode_2p_mid",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "PLAY_HAND_CARD",
+          "payload": {
+            "cardId": "sep-animal"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "current player rotates to p1"
+        ]
+      }
+    },
+    {
+      "id": "normal-09",
+      "kind": "normal",
+      "title": "Resign action",
+      "description": "Resignation ends match immediately.",
+      "initialStateRef": "mode_2p_mid",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "RESIGN",
+          "payload": {},
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p1"
+        ],
+        "stateAssertions": [
+          "winner is remaining player"
+        ]
+      }
+    },
+    {
+      "id": "normal-10",
+      "kind": "normal",
+      "title": "Pile exhaustion settlement",
+      "description": "Game settles when pile exhausted and stop condition met.",
+      "initialStateRef": "mode_3p_opening",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "DRAW_FROM_PILE",
+          "payload": {
+            "forcePileExhaustion": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p3"
+        ],
+        "stateAssertions": [
+          "final payout computed"
+        ]
+      }
+    },
+    {
+      "id": "illegal-01",
+      "kind": "illegal",
+      "title": "Play card not in hand",
+      "description": "Hand ownership violation.",
+      "initialStateRef": "mode_3p_opening",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLAY_HAND_CARD",
+          "payload": {
+            "cardId": "not-owned-card"
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "CARD_NOT_IN_HAND"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "hand unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-02",
+      "kind": "illegal",
+      "title": "Capture target without match",
+      "description": "Target must match played/drawn month.",
+      "initialStateRef": "mode_3p_opening",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "CHOOSE_CAPTURE_TARGET",
+          "payload": {
+            "fromTableCardId": "invalid-month-card"
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "INVALID_CAPTURE_TARGET"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "table unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-03",
+      "kind": "illegal",
+      "title": "Draw from pile in wrong stage",
+      "description": "Cannot draw before play-hand resolution.",
+      "initialStateRef": "mode_3p_opening",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "DRAW_FROM_PILE",
+          "payload": {
+            "wrongStage": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "STAGE_VIOLATION"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "turnStage unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-04",
+      "kind": "illegal",
+      "title": "Declare GO outside decision phase",
+      "description": "Go only in score decision stage.",
+      "initialStateRef": "mode_3p_opening",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "DECLARE_GO",
+          "payload": {},
+          "expect": {
+            "accepted": false,
+            "reasonCode": "NOT_IN_SCORE_DECISION"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "goCount unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-05",
+      "kind": "illegal",
+      "title": "Declare STOP below threshold",
+      "description": "Stop requires threshold score.",
+      "initialStateRef": "mode_3p_opening",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "DECLARE_STOP",
+          "payload": {
+            "scoreP1": 5
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "SCORE_BELOW_THRESHOLD"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "match remains active"
+        ]
+      }
+    },
+    {
+      "id": "illegal-06",
+      "kind": "illegal",
+      "title": "Act out of turn",
+      "description": "Only current player can play.",
+      "initialStateRef": "mode_2p_mid",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLAY_HAND_CARD",
+          "payload": {
+            "cardId": "oct-junk"
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "NOT_PLAYER_TURN"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "current player remains p2"
+        ]
+      }
+    },
+    {
+      "id": "illegal-07",
+      "kind": "illegal",
+      "title": "Choose capture before playing hand card",
+      "description": "No pending capture choice exists.",
+      "initialStateRef": "mode_2p_mid",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "CHOOSE_CAPTURE_TARGET",
+          "payload": {
+            "fromTableCardId": "may-junk"
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "NO_CAPTURE_PENDING"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-08",
+      "kind": "illegal",
+      "title": "Duplicate action sequence",
+      "description": "Replay of already committed action rejected.",
+      "initialStateRef": "mode_2p_mid",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "PLAY_HAND_CARD",
+          "payload": {
+            "cardId": "jun-ribbon",
+            "duplicateSeq": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "SEQ_CONFLICT"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "version unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-09",
+      "kind": "illegal",
+      "title": "Resign after finish",
+      "description": "No action after terminal state.",
+      "initialStateRef": "scoring_decision",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "RESIGN",
+          "payload": {
+            "forceFinished": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "MATCH_FINISHED"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p2"
+        ],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-10",
+      "kind": "illegal",
+      "title": "Invalid mode-specific payload",
+      "description": "Matgo-only option used in 3-player mode.",
+      "initialStateRef": "mode_3p_opening",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLAY_HAND_CARD",
+          "payload": {
+            "cardId": "jan-junk",
+            "matgoOnlyMultiplier": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "MODE_RULE_VIOLATION"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "invalid branch rejected"
+        ]
+      }
+    },
+    {
+      "id": "edge-01",
+      "kind": "edge",
+      "title": "Multiple table matches deterministic fallback",
+      "description": "Auto-select lowest id when no explicit choice in bot mode.",
+      "initialStateRef": "mode_3p_opening",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLAY_HAND_CARD",
+          "payload": {
+            "cardId": "mar-junk",
+            "autoResolveMultiMatch": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "lowest table card chosen"
+        ]
+      }
+    },
+    {
+      "id": "edge-02",
+      "kind": "edge",
+      "title": "Score jumps across threshold",
+      "description": "Large event can skip directly to decision stage.",
+      "initialStateRef": "mode_3p_opening",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "DRAW_FROM_PILE",
+          "payload": {
+            "forceComboScoreGain": 3,
+            "scoreBefore": 5
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "score_decision",
+        "winners": [],
+        "stateAssertions": [
+          "score decision triggered immediately"
+        ]
+      }
+    },
+    {
+      "id": "edge-03",
+      "kind": "edge",
+      "title": "Go count multiplier stacking",
+      "description": "Multiple GO declarations increase payout multiplier.",
+      "initialStateRef": "scoring_decision",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "DECLARE_GO",
+          "payload": {
+            "priorGoCount": 2
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "goCount becomes 3"
+        ]
+      }
+    },
+    {
+      "id": "edge-04",
+      "kind": "edge",
+      "title": "Stop after multiple GO",
+      "description": "Final stop includes go multiplier.",
+      "initialStateRef": "scoring_decision",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "DECLARE_STOP",
+          "payload": {
+            "priorGoCount": 2
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p1"
+        ],
+        "stateAssertions": [
+          "payout includes go multiplier"
+        ]
+      }
+    },
+    {
+      "id": "edge-05",
+      "kind": "edge",
+      "title": "Draw pile empties mid-turn",
+      "description": "Turn gracefully resolves without additional draw.",
+      "initialStateRef": "mode_2p_mid",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "DRAW_FROM_PILE",
+          "payload": {
+            "pileSizeBefore": 0
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "PILE_EMPTY"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "no draw event emitted"
+        ]
+      }
+    },
+    {
+      "id": "edge-06",
+      "kind": "edge",
+      "title": "Mode switch forbidden mid-match",
+      "description": "Cannot swap mode between matgo and gostop during game.",
+      "initialStateRef": "mode_2p_mid",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "ADMIN_SET_MODE",
+          "payload": {
+            "mode": "gostop_3p"
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "IMMUTABLE_MATCH_MODE"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "mode remains matgo_2p"
+        ]
+      }
+    },
+    {
+      "id": "edge-07",
+      "kind": "edge",
+      "title": "Out-of-turn go decision request",
+      "description": "Another player cannot decide go/stop for scorer.",
+      "initialStateRef": "scoring_decision",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "DECLARE_GO",
+          "payload": {},
+          "expect": {
+            "accepted": false,
+            "reasonCode": "NOT_PLAYER_TURN"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "score_decision",
+        "winners": [],
+        "stateAssertions": [
+          "decision owner remains p1"
+        ]
+      }
+    },
+    {
+      "id": "edge-08",
+      "kind": "edge",
+      "title": "Matgo opening deal cardinality",
+      "description": "Each player should start with 10 cards.",
+      "initialStateRef": "mode_2p_mid",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "VALIDATE_DEAL",
+          "payload": {},
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "hand size per player == 10 at deal"
+        ]
+      }
+    },
+    {
+      "id": "edge-09",
+      "kind": "edge",
+      "title": "Reject malformed card id",
+      "description": "Card id must map to known hwatu deck.",
+      "initialStateRef": "mode_3p_opening",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLAY_HAND_CARD",
+          "payload": {
+            "cardId": "unknown-card-id"
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "UNKNOWN_CARD_ID"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "edge-10",
+      "kind": "edge",
+      "title": "Final tie settlement deterministic ordering",
+      "description": "If payout tie occurs, deterministic placement order applied.",
+      "initialStateRef": "mode_3p_opening",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "FORCE_SETTLEMENT",
+          "payload": {
+            "tieSettlement": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p1"
+        ],
+        "stateAssertions": [
+          "tie settlement deterministic"
+        ]
+      }
+    }
+  ],
+  "sources": [
+    "https://en.wikipedia.org/wiki/Go-Stop",
+    "https://ko.wikipedia.org/wiki/%EA%B3%A0%EC%8A%A4%ED%86%B1",
+    "https://www.pagat.com/fishing/gostop.html"
+  ]
+}

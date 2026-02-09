@@ -1,0 +1,940 @@
+{
+  "gameId": "splendor",
+  "rulesetVersion": "2024-space-cowboys-base-en",
+  "scenarioCounts": {
+    "normal": 10,
+    "illegal": 10,
+    "edge": 10
+  },
+  "initialStates": {
+    "base_3p": {
+      "phase": "main_turn",
+      "currentPlayerId": "p1",
+      "tokenLimit": 10
+    },
+    "reserve_limit": {
+      "phase": "main_turn",
+      "currentPlayerId": "p1",
+      "reservedCountP1": 3
+    },
+    "tie_break": {
+      "phase": "end_of_turn_checks",
+      "currentPlayerId": "p3",
+      "triggeredLastRound": true
+    }
+  },
+  "scenarios": [
+    {
+      "id": "normal-01",
+      "kind": "normal",
+      "title": "Take three different tokens",
+      "description": "Player takes 3 different gems when available.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_TOKENS_DIFFERENT",
+          "payload": {
+            "colors": [
+              "emerald",
+              "ruby",
+              "diamond"
+            ]
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "p1 token count increases by 3"
+        ]
+      }
+    },
+    {
+      "id": "normal-02",
+      "kind": "normal",
+      "title": "Take two same color with bank >= 4",
+      "description": "Legal same-color take rule.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_TOKENS_SAME",
+          "payload": {
+            "color": "onyx"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "bank onyx decreases by 2"
+        ]
+      }
+    },
+    {
+      "id": "normal-03",
+      "kind": "normal",
+      "title": "Reserve visible card",
+      "description": "Reserve from tableau and receive gold if available.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "RESERVE_VISIBLE_CARD",
+          "payload": {
+            "tier": 1,
+            "cardId": "t1-c3"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "reserved cards for p1 increments"
+        ]
+      }
+    },
+    {
+      "id": "normal-04",
+      "kind": "normal",
+      "title": "Reserve top deck card",
+      "description": "Blind reserve from deck.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "RESERVE_TOP_DECK_CARD",
+          "payload": {
+            "tier": 2
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "tier2 deck remaining decremented"
+        ]
+      }
+    },
+    {
+      "id": "normal-05",
+      "kind": "normal",
+      "title": "Purchase visible card with discounts",
+      "description": "Cost reduced by bonuses.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PURCHASE_VISIBLE_CARD",
+          "payload": {
+            "tier": 1,
+            "cardId": "t1-c1",
+            "payment": {
+              "ruby": 1,
+              "gold": 1
+            }
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "p1 prestige increases"
+        ]
+      }
+    },
+    {
+      "id": "normal-06",
+      "kind": "normal",
+      "title": "Purchase reserved card",
+      "description": "Reserved card can be purchased directly.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PURCHASE_RESERVED_CARD",
+          "payload": {
+            "cardId": "rsv-7",
+            "payment": {
+              "sapphire": 2,
+              "diamond": 1
+            }
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "reserved card removed after purchase"
+        ]
+      }
+    },
+    {
+      "id": "normal-07",
+      "kind": "normal",
+      "title": "Claim noble after purchase",
+      "description": "Automatic noble award when requirements met.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PURCHASE_VISIBLE_CARD",
+          "payload": {
+            "tier": 2,
+            "cardId": "t2-c5",
+            "payment": {
+              "emerald": 2
+            }
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "noble assigned to p1"
+        ]
+      }
+    },
+    {
+      "id": "normal-08",
+      "kind": "normal",
+      "title": "Trigger last round at 15 points",
+      "description": "Player reaches 15 prestige.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PURCHASE_VISIBLE_CARD",
+          "payload": {
+            "tier": 3,
+            "cardId": "t3-c2",
+            "payment": {
+              "gold": 2,
+              "ruby": 3
+            }
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "last round flag set"
+        ]
+      }
+    },
+    {
+      "id": "normal-09",
+      "kind": "normal",
+      "title": "Forced token return after overflow",
+      "description": "Overflow follow-up action resolves to 10 tokens.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "RETURN_TOKENS_AFTER_OVERFLOW",
+          "payload": {
+            "returns": {
+              "ruby": 1
+            }
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "p1 token total equals 10"
+        ]
+      }
+    },
+    {
+      "id": "normal-10",
+      "kind": "normal",
+      "title": "Resolve tie-breaker at end of final round",
+      "description": "Winner selected by purchased card count tie-break.",
+      "initialStateRef": "tie_break",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p3",
+          "type": "END_ROUND_EVALUATION",
+          "payload": {},
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p2"
+        ],
+        "stateAssertions": [
+          "winner chosen deterministically"
+        ]
+      }
+    },
+    {
+      "id": "illegal-01",
+      "kind": "illegal",
+      "title": "Take two same color when bank has < 4",
+      "description": "Rule violation for same-color token action.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_TOKENS_SAME",
+          "payload": {
+            "color": "emerald"
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "TOKEN_POOL_TOO_LOW"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-02",
+      "kind": "illegal",
+      "title": "Take duplicate colors in different-token action",
+      "description": "Different-token action requires distinct colors.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_TOKENS_DIFFERENT",
+          "payload": {
+            "colors": [
+              "ruby",
+              "ruby",
+              "onyx"
+            ]
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "COLORS_NOT_DISTINCT"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-03",
+      "kind": "illegal",
+      "title": "Reserve a fourth card",
+      "description": "Reserve limit is 3 cards.",
+      "initialStateRef": "reserve_limit",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "RESERVE_VISIBLE_CARD",
+          "payload": {
+            "tier": 1,
+            "cardId": "t1-c8"
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "RESERVE_LIMIT_REACHED"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "reserved card count unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-04",
+      "kind": "illegal",
+      "title": "Purchase without enough payment",
+      "description": "Cannot underpay development card cost.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PURCHASE_VISIBLE_CARD",
+          "payload": {
+            "tier": 2,
+            "cardId": "t2-c4",
+            "payment": {
+              "ruby": 1
+            }
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "INSUFFICIENT_PAYMENT"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "tableau unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-05",
+      "kind": "illegal",
+      "title": "Return tokens when not overflowing",
+      "description": "Forced return only valid in overflow state.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "RETURN_TOKENS_AFTER_OVERFLOW",
+          "payload": {
+            "returns": {
+              "emerald": 1
+            }
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "NOT_IN_OVERFLOW"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "token counts unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-06",
+      "kind": "illegal",
+      "title": "Reserve from empty deck",
+      "description": "Cannot draw hidden reserve when deck empty.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "RESERVE_TOP_DECK_CARD",
+          "payload": {
+            "tier": 3,
+            "forcedDeckRemaining": 0
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "DECK_EMPTY"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "deck remains empty"
+        ]
+      }
+    },
+    {
+      "id": "illegal-07",
+      "kind": "illegal",
+      "title": "Act out of turn",
+      "description": "Non-current player action rejected.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "TAKE_TOKENS_DIFFERENT",
+          "payload": {
+            "colors": [
+              "emerald",
+              "ruby",
+              "diamond"
+            ]
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "NOT_PLAYER_TURN"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "current player remains p1"
+        ]
+      }
+    },
+    {
+      "id": "illegal-08",
+      "kind": "illegal",
+      "title": "Reserve non-existing card id",
+      "description": "Card must exist in current tableau row.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "RESERVE_VISIBLE_CARD",
+          "payload": {
+            "tier": 1,
+            "cardId": "missing-card"
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "CARD_NOT_FOUND"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-09",
+      "kind": "illegal",
+      "title": "Purchase reserved card not owned",
+      "description": "Player cannot buy another player's reserve.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PURCHASE_RESERVED_CARD",
+          "payload": {
+            "cardId": "p2-rsv-1",
+            "payment": {
+              "ruby": 2
+            }
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "RESERVED_CARD_NOT_OWNED"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-10",
+      "kind": "illegal",
+      "title": "Action after match finished",
+      "description": "No actions accepted in terminal state.",
+      "initialStateRef": "tie_break",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_TOKENS_DIFFERENT",
+          "payload": {
+            "colors": [
+              "emerald",
+              "ruby",
+              "diamond"
+            ]
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "MATCH_FINISHED"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p2"
+        ],
+        "stateAssertions": [
+          "no additional events emitted"
+        ]
+      }
+    },
+    {
+      "id": "edge-01",
+      "kind": "edge",
+      "title": "Take three tokens when only three colors left",
+      "description": "Edge of bank depletion still legal.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_TOKENS_DIFFERENT",
+          "payload": {
+            "colors": [
+              "emerald",
+              "sapphire",
+              "onyx"
+            ],
+            "forcedPoolSparse": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "bank can reach zero for selected colors"
+        ]
+      }
+    },
+    {
+      "id": "edge-02",
+      "kind": "edge",
+      "title": "Reserve without gold in bank",
+      "description": "Reserve still valid when gold unavailable.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "RESERVE_VISIBLE_CARD",
+          "payload": {
+            "tier": 2,
+            "cardId": "t2-c3",
+            "forcedGoldInBank": 0
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "reserve succeeds without gold gain"
+        ]
+      }
+    },
+    {
+      "id": "edge-03",
+      "kind": "edge",
+      "title": "Multiple nobles eligible",
+      "description": "Deterministic noble selection path.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PURCHASE_VISIBLE_CARD",
+          "payload": {
+            "tier": 2,
+            "cardId": "t2-c2",
+            "payment": {
+              "diamond": 2
+            },
+            "multiNobleEligible": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "lowest noble id selected"
+        ]
+      }
+    },
+    {
+      "id": "edge-04",
+      "kind": "edge",
+      "title": "Purchase with all-gold payment",
+      "description": "Gold can cover any shortfall.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PURCHASE_RESERVED_CARD",
+          "payload": {
+            "cardId": "rsv-9",
+            "payment": {
+              "gold": 4
+            }
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "gold spent correctly"
+        ]
+      }
+    },
+    {
+      "id": "edge-05",
+      "kind": "edge",
+      "title": "Exact token limit after take",
+      "description": "Take action ending at exactly 10 tokens is valid.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_TOKENS_DIFFERENT",
+          "payload": {
+            "colors": [
+              "ruby",
+              "diamond",
+              "onyx"
+            ],
+            "tokenCountBefore": 7
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "no forced return action required"
+        ]
+      }
+    },
+    {
+      "id": "edge-06",
+      "kind": "edge",
+      "title": "Tableau slot not refilled when deck empty",
+      "description": "Empty slot remains empty if tier deck exhausted.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PURCHASE_VISIBLE_CARD",
+          "payload": {
+            "tier": 3,
+            "cardId": "t3-last",
+            "payment": {
+              "emerald": 3
+            },
+            "forcedDeckRemaining": 0
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "tier3 tableau can show <4 cards"
+        ]
+      }
+    },
+    {
+      "id": "edge-07",
+      "kind": "edge",
+      "title": "Late-round tie resolved by card count",
+      "description": "Same prestige winner has fewer purchased cards.",
+      "initialStateRef": "tie_break",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p3",
+          "type": "END_ROUND_EVALUATION",
+          "payload": {
+            "tieMode": "card_count"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p2"
+        ],
+        "stateAssertions": [
+          "tie-breaker applied"
+        ]
+      }
+    },
+    {
+      "id": "edge-08",
+      "kind": "edge",
+      "title": "Late-round full tie by card count",
+      "description": "Fallback to turn-order deterministic winner.",
+      "initialStateRef": "tie_break",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p3",
+          "type": "END_ROUND_EVALUATION",
+          "payload": {
+            "tieMode": "turn_order"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p1"
+        ],
+        "stateAssertions": [
+          "turn-order rule applied"
+        ]
+      }
+    },
+    {
+      "id": "edge-09",
+      "kind": "edge",
+      "title": "Attempt same-color take with exactly 3 in bank",
+      "description": "Boundary rejects at 3.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_TOKENS_SAME",
+          "payload": {
+            "color": "diamond",
+            "forcedBankCount": 3
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "TOKEN_POOL_TOO_LOW"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "edge-10",
+      "kind": "edge",
+      "title": "Last round trigger does not end immediately",
+      "description": "Round must complete to end game.",
+      "initialStateRef": "base_3p",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PURCHASE_VISIBLE_CARD",
+          "payload": {
+            "tier": 3,
+            "cardId": "t3-c9",
+            "payment": {
+              "onyx": 5
+            },
+            "forcePrestigeTo15": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "status remains active until round completion"
+        ]
+      }
+    }
+  ],
+  "sources": [
+    "https://cdn.svc.asmodee.net/production-spacecowboys/uploads/2024/09/SPLENDOR-RULES-EN.pdf",
+    "https://www.spacecowboys.fr/splendor",
+    "https://www.rulespal.com/splendor/rulebook"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "online-boardgame-engine-research",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Research artifacts and TypeScript contracts for implementing online board games.",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/server/index.ts",
+    "start": "node dist/src/server/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run build && npm run test",
+    "generate:vectors": "tsx scripts/generate-test-vectors.ts",
+    "validate:vectors": "tsx scripts/validate-test-vectors.ts"
+  },
+  "dependencies": {
+    "fastify": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.8",
+    "zod": "^3.24.2"
+  }
+}

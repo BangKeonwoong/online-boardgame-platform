@@ -1,0 +1,905 @@
+{
+  "gameId": "azul",
+  "rulesetVersion": "azul-base-2024-next-move",
+  "scenarioCounts": {
+    "normal": 10,
+    "illegal": 10,
+    "edge": 10
+  },
+  "initialStates": {
+    "round_draft": {
+      "phase": "main_turn",
+      "turnStage": "draft",
+      "currentPlayerId": "p1"
+    },
+    "wall_tiling": {
+      "phase": "main_turn",
+      "turnStage": "wall_tiling",
+      "currentPlayerId": "p2"
+    },
+    "end_check": {
+      "phase": "main_turn",
+      "turnStage": "round_end",
+      "currentPlayerId": "p3"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "normal-01",
+      "kind": "normal",
+      "title": "Take color from factory",
+      "description": "Selected color moved to pattern line/floor; leftovers to center.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_FROM_FACTORY",
+          "payload": {
+            "factoryIndex": 0,
+            "color": "blue",
+            "targetLine": 2
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "factory emptied for selected color"
+        ]
+      }
+    },
+    {
+      "id": "normal-02",
+      "kind": "normal",
+      "title": "Take color from center",
+      "description": "Center draft without factory source.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "TAKE_FROM_CENTER",
+          "payload": {
+            "color": "red",
+            "targetLine": 1
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "center tiles reduced for red"
+        ]
+      }
+    },
+    {
+      "id": "normal-03",
+      "kind": "normal",
+      "title": "First center taker gets token",
+      "description": "First player token assigned on first center draft.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p3",
+          "type": "TAKE_FROM_CENTER",
+          "payload": {
+            "color": "yellow",
+            "targetLine": 0,
+            "firstTakeFromCenter": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "first-player token assigned to p3"
+        ]
+      }
+    },
+    {
+      "id": "normal-04",
+      "kind": "normal",
+      "title": "Overflow to floor line",
+      "description": "Excess drafted tiles move to floor.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_FROM_FACTORY",
+          "payload": {
+            "factoryIndex": 2,
+            "color": "black",
+            "targetLine": 1,
+            "overflow": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "overflow tiles placed on floor line"
+        ]
+      }
+    },
+    {
+      "id": "normal-05",
+      "kind": "normal",
+      "title": "Draft depletion transitions to wall tiling",
+      "description": "When no selectable tiles remain, phase switches.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p4",
+          "type": "TAKE_FROM_CENTER",
+          "payload": {
+            "color": "white",
+            "targetLine": 4,
+            "finalDraftPick": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "turnStage becomes wall_tiling"
+        ]
+      }
+    },
+    {
+      "id": "normal-06",
+      "kind": "normal",
+      "title": "Apply wall tiling scoring",
+      "description": "One tile placed from each full pattern line and scored.",
+      "initialStateRef": "wall_tiling",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "APPLY_WALL_TILING",
+          "payload": {},
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "score updated by adjacency"
+        ]
+      }
+    },
+    {
+      "id": "normal-07",
+      "kind": "normal",
+      "title": "Floor penalties applied and score clamped",
+      "description": "Negative floor penalties reduce score but not below 0.",
+      "initialStateRef": "wall_tiling",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "APPLY_WALL_TILING",
+          "payload": {
+            "floorTiles": 5,
+            "scoreBefore": 2
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "score clamped to minimum 0"
+        ]
+      }
+    },
+    {
+      "id": "normal-08",
+      "kind": "normal",
+      "title": "End round refills factories",
+      "description": "Factories filled from bag/discard at round end.",
+      "initialStateRef": "end_check",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p3",
+          "type": "END_ROUND",
+          "payload": {},
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "factories repopulated"
+        ]
+      }
+    },
+    {
+      "id": "normal-09",
+      "kind": "normal",
+      "title": "Game end trigger on completed row",
+      "description": "A complete horizontal row triggers final scoring.",
+      "initialStateRef": "end_check",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p3",
+          "type": "END_ROUND",
+          "payload": {
+            "rowCompleted": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p3"
+        ],
+        "stateAssertions": [
+          "final bonuses applied"
+        ]
+      }
+    },
+    {
+      "id": "normal-10",
+      "kind": "normal",
+      "title": "Resign action",
+      "description": "Player resignation ends game.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "RESIGN",
+          "payload": {},
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p2"
+        ],
+        "stateAssertions": [
+          "resignation handled"
+        ]
+      }
+    },
+    {
+      "id": "illegal-01",
+      "kind": "illegal",
+      "title": "Take color not present in factory",
+      "description": "Selected color must exist in source factory.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_FROM_FACTORY",
+          "payload": {
+            "factoryIndex": 1,
+            "color": "blue",
+            "factoryHasBlue": false,
+            "targetLine": 2
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "COLOR_NOT_IN_SOURCE"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-02",
+      "kind": "illegal",
+      "title": "Take color not present in center",
+      "description": "Selected color missing in center pool.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_FROM_CENTER",
+          "payload": {
+            "color": "red",
+            "centerHasRed": false,
+            "targetLine": 2
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "COLOR_NOT_IN_SOURCE"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-03",
+      "kind": "illegal",
+      "title": "Target line with conflicting color",
+      "description": "Pattern line color must match existing line color.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_FROM_FACTORY",
+          "payload": {
+            "factoryIndex": 0,
+            "color": "yellow",
+            "targetLine": 3,
+            "lineColor": "blue"
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "PATTERN_LINE_COLOR_CONFLICT"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "line unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-04",
+      "kind": "illegal",
+      "title": "Target line already full",
+      "description": "Cannot place tiles into full pattern line.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_FROM_FACTORY",
+          "payload": {
+            "factoryIndex": 4,
+            "color": "black",
+            "targetLine": 2,
+            "lineFull": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "PATTERN_LINE_FULL"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-05",
+      "kind": "illegal",
+      "title": "Color already in corresponding wall row slot",
+      "description": "Cannot stage color already placed in target row.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_FROM_FACTORY",
+          "payload": {
+            "factoryIndex": 3,
+            "color": "white",
+            "targetLine": 4,
+            "colorAlreadyOnWallRow": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "WALL_ROW_COLOR_EXISTS"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-06",
+      "kind": "illegal",
+      "title": "Draft action during wall tiling",
+      "description": "Draft actions forbidden outside draft stage.",
+      "initialStateRef": "wall_tiling",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "TAKE_FROM_CENTER",
+          "payload": {
+            "color": "red",
+            "targetLine": 0
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "STAGE_VIOLATION"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "stage unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-07",
+      "kind": "illegal",
+      "title": "Wall tiling action during draft",
+      "description": "Wall tiling only after draft depletion.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "APPLY_WALL_TILING",
+          "payload": {},
+          "expect": {
+            "accepted": false,
+            "reasonCode": "STAGE_VIOLATION"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-08",
+      "kind": "illegal",
+      "title": "End round before wall tiling complete",
+      "description": "Cannot end round while pending wall updates.",
+      "initialStateRef": "wall_tiling",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "END_ROUND",
+          "payload": {
+            "pendingPlayers": [
+              "p3"
+            ]
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "WALL_TILING_PENDING"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "round not advanced"
+        ]
+      }
+    },
+    {
+      "id": "illegal-09",
+      "kind": "illegal",
+      "title": "Action out of turn",
+      "description": "Only current player can draft.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p3",
+          "type": "TAKE_FROM_FACTORY",
+          "payload": {
+            "factoryIndex": 2,
+            "color": "blue",
+            "targetLine": 1
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "NOT_PLAYER_TURN"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "current player unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-10",
+      "kind": "illegal",
+      "title": "Action after game finished",
+      "description": "No post-terminal actions allowed.",
+      "initialStateRef": "end_check",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p3",
+          "type": "TAKE_FROM_CENTER",
+          "payload": {
+            "color": "yellow",
+            "targetLine": 0,
+            "forceFinished": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "MATCH_FINISHED"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p1"
+        ],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "edge-01",
+      "kind": "edge",
+      "title": "Bag empty uses discard refill",
+      "description": "Factory refill shuffles discard into bag.",
+      "initialStateRef": "end_check",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p3",
+          "type": "END_ROUND",
+          "payload": {
+            "bagEmpty": true,
+            "discardCount": 23
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "bag refilled from discard"
+        ]
+      }
+    },
+    {
+      "id": "edge-02",
+      "kind": "edge",
+      "title": "Insufficient tiles after refill",
+      "description": "Factories can have fewer than 4 tiles near game end.",
+      "initialStateRef": "end_check",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p3",
+          "type": "END_ROUND",
+          "payload": {
+            "bagAndDiscardTotal": 6
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "partial factory fill handled"
+        ]
+      }
+    },
+    {
+      "id": "edge-03",
+      "kind": "edge",
+      "title": "Center only first-player token remains",
+      "description": "Draft ends when no colored tiles remain.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p4",
+          "type": "TAKE_FROM_FACTORY",
+          "payload": {
+            "factoryIndex": 0,
+            "color": "black",
+            "targetLine": 4,
+            "leavesOnlyToken": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "turnStage transitions to wall_tiling"
+        ]
+      }
+    },
+    {
+      "id": "edge-04",
+      "kind": "edge",
+      "title": "Penalty overrun below zero score",
+      "description": "Score cannot drop below zero.",
+      "initialStateRef": "wall_tiling",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "APPLY_WALL_TILING",
+          "payload": {
+            "scoreBefore": 1,
+            "floorTiles": 7,
+            "noPlacements": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "score equals 0"
+        ]
+      }
+    },
+    {
+      "id": "edge-05",
+      "kind": "edge",
+      "title": "Final scoring tie",
+      "description": "Tie on final score results shared winners.",
+      "initialStateRef": "end_check",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p3",
+          "type": "END_ROUND",
+          "payload": {
+            "rowCompleted": true,
+            "forceTie": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p1",
+          "p3"
+        ],
+        "stateAssertions": [
+          "multiple winners allowed"
+        ]
+      }
+    },
+    {
+      "id": "edge-06",
+      "kind": "edge",
+      "title": "Reject invalid factory index",
+      "description": "Factory index must be in configured range.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_FROM_FACTORY",
+          "payload": {
+            "factoryIndex": 99,
+            "color": "blue",
+            "targetLine": 0
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "INVALID_FACTORY_INDEX"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "edge-07",
+      "kind": "edge",
+      "title": "Take all color from center with overflow",
+      "description": "All same-color tiles moved from center, overflow to floor.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "TAKE_FROM_CENTER",
+          "payload": {
+            "color": "blue",
+            "targetLine": 0,
+            "overflow": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "all blue removed from center"
+        ]
+      }
+    },
+    {
+      "id": "edge-08",
+      "kind": "edge",
+      "title": "First-player token penalty applied",
+      "description": "Token moved to floor and incurs penalty.",
+      "initialStateRef": "wall_tiling",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "APPLY_WALL_TILING",
+          "payload": {
+            "hasFirstPlayerToken": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "first-player token penalty counted"
+        ]
+      }
+    },
+    {
+      "id": "edge-09",
+      "kind": "edge",
+      "title": "Reject idempotent replay",
+      "description": "Duplicate idempotency key should not mutate state twice.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_FROM_FACTORY",
+          "payload": {
+            "factoryIndex": 1,
+            "color": "white",
+            "targetLine": 1,
+            "duplicateIdempotency": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "IDEMPOTENCY_REPLAY"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "edge-10",
+      "kind": "edge",
+      "title": "Malformed board row metadata",
+      "description": "Validator catches invalid pattern line capacities.",
+      "initialStateRef": "round_draft",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "TAKE_FROM_CENTER",
+          "payload": {
+            "color": "black",
+            "targetLine": 3,
+            "malformedPatternLine": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "INVALID_STATE"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "error emitted"
+        ]
+      }
+    }
+  ],
+  "sources": [
+    "https://cdn.svc.asmodee.net/production-nextmove/uploads/2024/07/NM6010_azul-rules.pdf",
+    "https://www.planbgames.com/en/boardgames/azul/",
+    "https://www.rulespal.com/azul/rulebook"
+  ]
+}

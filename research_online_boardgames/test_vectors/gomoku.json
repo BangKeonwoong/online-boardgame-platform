@@ -1,0 +1,915 @@
+{
+  "gameId": "gomoku",
+  "rulesetVersion": "freestyle-15x15-v1",
+  "scenarioCounts": {
+    "normal": 10,
+    "illegal": 10,
+    "edge": 10
+  },
+  "initialStates": {
+    "empty": {
+      "phase": "placing",
+      "currentPlayerId": "p1",
+      "nextColor": "B"
+    },
+    "midgame": {
+      "phase": "placing",
+      "currentPlayerId": "p1",
+      "nextColor": "B",
+      "stonesPlaced": 24
+    },
+    "almost_full": {
+      "phase": "placing",
+      "currentPlayerId": "p2",
+      "nextColor": "W",
+      "emptyCells": 1
+    }
+  },
+  "scenarios": [
+    {
+      "id": "normal-01",
+      "kind": "normal",
+      "title": "Black opens at center",
+      "description": "First move on empty board.",
+      "initialStateRef": "empty",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 7,
+            "y": 7
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "placing",
+        "winners": [],
+        "stateAssertions": [
+          "board[7][7] == B"
+        ]
+      }
+    },
+    {
+      "id": "normal-02",
+      "kind": "normal",
+      "title": "White responds adjacent",
+      "description": "Second player legal move.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 8,
+            "y": 7
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "placing",
+        "winners": [],
+        "stateAssertions": [
+          "turn passes to white"
+        ]
+      }
+    },
+    {
+      "id": "normal-03",
+      "kind": "normal",
+      "title": "Horizontal five-in-row win",
+      "description": "Black completes a horizontal line.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 10,
+            "y": 7,
+            "createLine": "horizontal"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p1"
+        ],
+        "stateAssertions": [
+          "winnerColor == B"
+        ]
+      }
+    },
+    {
+      "id": "normal-04",
+      "kind": "normal",
+      "title": "Vertical five-in-row win",
+      "description": "Black completes a vertical line.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 5,
+            "y": 10,
+            "createLine": "vertical"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p1"
+        ],
+        "stateAssertions": [
+          "winnerColor == B"
+        ]
+      }
+    },
+    {
+      "id": "normal-05",
+      "kind": "normal",
+      "title": "Descending diagonal win",
+      "description": "Black wins on main diagonal direction.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 9,
+            "y": 9,
+            "createLine": "diag_down"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p1"
+        ],
+        "stateAssertions": [
+          "diagonal win detected"
+        ]
+      }
+    },
+    {
+      "id": "normal-06",
+      "kind": "normal",
+      "title": "Ascending diagonal win",
+      "description": "Black wins on anti-diagonal direction.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 9,
+            "y": 5,
+            "createLine": "diag_up"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p1"
+        ],
+        "stateAssertions": [
+          "anti-diagonal win detected"
+        ]
+      }
+    },
+    {
+      "id": "normal-07",
+      "kind": "normal",
+      "title": "No-win move passes turn",
+      "description": "A legal move without terminal line.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 4,
+            "y": 6
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "placing",
+        "winners": [],
+        "stateAssertions": [
+          "nextColor toggles"
+        ]
+      }
+    },
+    {
+      "id": "normal-08",
+      "kind": "normal",
+      "title": "Resign action ends game",
+      "description": "Player resignation handled as terminal.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "RESIGN",
+          "payload": {},
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p2"
+        ],
+        "stateAssertions": [
+          "status finished on resign"
+        ]
+      }
+    },
+    {
+      "id": "normal-09",
+      "kind": "normal",
+      "title": "Draw accepted proposal",
+      "description": "Optional draw path for tournament handling.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "REQUEST_DRAW",
+          "payload": {
+            "acceptedByOpponent": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [],
+        "stateAssertions": [
+          "game result draw"
+        ]
+      }
+    },
+    {
+      "id": "normal-10",
+      "kind": "normal",
+      "title": "Last move fills board and wins",
+      "description": "Final empty cell forms winning line.",
+      "initialStateRef": "almost_full",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 14,
+            "y": 14,
+            "createLine": "horizontal"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p2"
+        ],
+        "stateAssertions": [
+          "win takes precedence over draw"
+        ]
+      }
+    },
+    {
+      "id": "illegal-01",
+      "kind": "illegal",
+      "title": "Place on occupied point",
+      "description": "Cannot place on non-empty intersection.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 7,
+            "y": 7,
+            "occupied": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "CELL_OCCUPIED"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "placing",
+        "winners": [],
+        "stateAssertions": [
+          "board unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-02",
+      "kind": "illegal",
+      "title": "X out of range negative",
+      "description": "Coordinates must be >= 0.",
+      "initialStateRef": "empty",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": -1,
+            "y": 4
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "OUT_OF_BOUNDS"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "placing",
+        "winners": [],
+        "stateAssertions": [
+          "board unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-03",
+      "kind": "illegal",
+      "title": "Y out of range above max",
+      "description": "Coordinates must be <= 14.",
+      "initialStateRef": "empty",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 4,
+            "y": 15
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "OUT_OF_BOUNDS"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "placing",
+        "winners": [],
+        "stateAssertions": [
+          "board unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-04",
+      "kind": "illegal",
+      "title": "Out-of-turn move",
+      "description": "Only current player can place stone.",
+      "initialStateRef": "empty",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 7,
+            "y": 7
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "NOT_PLAYER_TURN"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "placing",
+        "winners": [],
+        "stateAssertions": [
+          "current player remains p1"
+        ]
+      }
+    },
+    {
+      "id": "illegal-05",
+      "kind": "illegal",
+      "title": "Move after finished game",
+      "description": "Terminal game disallows placement.",
+      "initialStateRef": "almost_full",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 0,
+            "y": 0,
+            "forceFinished": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "MATCH_FINISHED"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p2"
+        ],
+        "stateAssertions": [
+          "no additional move history"
+        ]
+      }
+    },
+    {
+      "id": "illegal-06",
+      "kind": "illegal",
+      "title": "Draw request by non-turn player",
+      "description": "Protocol requires active player request.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "REQUEST_DRAW",
+          "payload": {},
+          "expect": {
+            "accepted": false,
+            "reasonCode": "NOT_PLAYER_TURN"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "placing",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-07",
+      "kind": "illegal",
+      "title": "Duplicate sequence number",
+      "description": "Server rejects replayed seq in live match.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 1,
+            "y": 1,
+            "duplicateSeq": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "SEQ_CONFLICT"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "placing",
+        "winners": [],
+        "stateAssertions": [
+          "version unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-08",
+      "kind": "illegal",
+      "title": "Invalid payload type",
+      "description": "Coordinates must be integers.",
+      "initialStateRef": "empty",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": "7",
+            "y": 7
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "INVALID_PAYLOAD"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "placing",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-09",
+      "kind": "illegal",
+      "title": "Resign after game already finished",
+      "description": "Terminal action should be rejected.",
+      "initialStateRef": "almost_full",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "RESIGN",
+          "payload": {
+            "forceFinished": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "MATCH_FINISHED"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p1"
+        ],
+        "stateAssertions": [
+          "result unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-10",
+      "kind": "illegal",
+      "title": "Place stone with mismatched color assignment",
+      "description": "Actor color must match nextColor.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 3,
+            "y": 3,
+            "forceColor": "W"
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "COLOR_MISMATCH"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "placing",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "edge-01",
+      "kind": "edge",
+      "title": "Overline counts as win in freestyle",
+      "description": "Line of 6 still valid win.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 11,
+            "y": 7,
+            "createLine": "overline"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p1"
+        ],
+        "stateAssertions": [
+          "overline accepted"
+        ]
+      }
+    },
+    {
+      "id": "edge-02",
+      "kind": "edge",
+      "title": "Single move creates two lines",
+      "description": "Double threat line still one immediate win.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 8,
+            "y": 8,
+            "createLine": "double"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p1"
+        ],
+        "stateAssertions": [
+          "win once regardless of line count"
+        ]
+      }
+    },
+    {
+      "id": "edge-03",
+      "kind": "edge",
+      "title": "Final cell without five is draw",
+      "description": "Board full and no line results draw.",
+      "initialStateRef": "almost_full",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 14,
+            "y": 14,
+            "createLine": "none"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [],
+        "stateAssertions": [
+          "draw state emitted"
+        ]
+      }
+    },
+    {
+      "id": "edge-04",
+      "kind": "edge",
+      "title": "Corner placement starts line",
+      "description": "Edge coordinates are valid intersections.",
+      "initialStateRef": "empty",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 0,
+            "y": 0
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "placing",
+        "winners": [],
+        "stateAssertions": [
+          "corner accepted"
+        ]
+      }
+    },
+    {
+      "id": "edge-05",
+      "kind": "edge",
+      "title": "Boundary overline at edge",
+      "description": "Long line touching border detected.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 14,
+            "y": 10,
+            "createLine": "edge_overline"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p1"
+        ],
+        "stateAssertions": [
+          "scan handles boundaries"
+        ]
+      }
+    },
+    {
+      "id": "edge-06",
+      "kind": "edge",
+      "title": "Attempt move with very high seq gap",
+      "description": "Seq gaps are accepted if monotonic in offline replay.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 6,
+            "y": 6,
+            "seqGap": 100
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "placing",
+        "winners": [],
+        "stateAssertions": [
+          "monotonic seq accepted"
+        ]
+      }
+    },
+    {
+      "id": "edge-07",
+      "kind": "edge",
+      "title": "Reject stale idempotency key replay",
+      "description": "Duplicate action idempotency in same match rejected.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 6,
+            "y": 7,
+            "duplicateIdempotency": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "IDEMPOTENCY_REPLAY"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "placing",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "edge-08",
+      "kind": "edge",
+      "title": "Resign before any move",
+      "description": "Immediate resignation legal in opening.",
+      "initialStateRef": "empty",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "RESIGN",
+          "payload": {},
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p2"
+        ],
+        "stateAssertions": [
+          "winner assigned to opponent"
+        ]
+      }
+    },
+    {
+      "id": "edge-09",
+      "kind": "edge",
+      "title": "Draw request declined",
+      "description": "Declined draw keeps game active.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "REQUEST_DRAW",
+          "payload": {
+            "acceptedByOpponent": false
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "placing",
+        "winners": [],
+        "stateAssertions": [
+          "phase remains placing"
+        ]
+      }
+    },
+    {
+      "id": "edge-10",
+      "kind": "edge",
+      "title": "Attempt placement on synthetic invalid board shape",
+      "description": "Validator rejects malformed board dimensions.",
+      "initialStateRef": "midgame",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_STONE",
+          "payload": {
+            "x": 4,
+            "y": 4,
+            "malformedBoard": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "INVALID_STATE"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "placing",
+        "winners": [],
+        "stateAssertions": [
+          "error emitted for invalid state"
+        ]
+      }
+    }
+  ],
+  "sources": [
+    "https://brainking.com/en/GameRules?tp=9",
+    "https://www.renju.se/rif/rifrules.htm",
+    "https://en.wikipedia.org/wiki/Gomoku"
+  ]
+}

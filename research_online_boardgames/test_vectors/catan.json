@@ -1,0 +1,891 @@
+{
+  "gameId": "catan",
+  "rulesetVersion": "catan-base-2025-secure-rulebook",
+  "scenarioCounts": {
+    "normal": 10,
+    "illegal": 10,
+    "edge": 10
+  },
+  "initialStates": {
+    "setup_snake": {
+      "phase": "setup",
+      "turnStage": "setup_place_settlement_road",
+      "currentPlayerId": "p1"
+    },
+    "main_turn": {
+      "phase": "main_turn",
+      "turnStage": "roll_or_play_knight",
+      "currentPlayerId": "p2"
+    },
+    "robber_flow": {
+      "phase": "main_turn",
+      "turnStage": "robber_discard",
+      "currentPlayerId": "p3"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "normal-01",
+      "kind": "normal",
+      "title": "Place first setup settlement",
+      "description": "Opening setup placement by p1.",
+      "initialStateRef": "setup_snake",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_SETUP_SETTLEMENT",
+          "payload": {
+            "intersectionId": "i-14"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "setup",
+        "winners": [],
+        "stateAssertions": [
+          "settlement owner set to p1"
+        ]
+      }
+    },
+    {
+      "id": "normal-02",
+      "kind": "normal",
+      "title": "Place setup road connected to settlement",
+      "description": "Road must connect new settlement.",
+      "initialStateRef": "setup_snake",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "PLACE_SETUP_ROAD",
+          "payload": {
+            "edgeId": "e-14-15"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "setup",
+        "winners": [],
+        "stateAssertions": [
+          "road owner set to p1"
+        ]
+      }
+    },
+    {
+      "id": "normal-03",
+      "kind": "normal",
+      "title": "Roll dice at turn start",
+      "description": "Valid roll action in roll stage.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "ROLL_DICE",
+          "payload": {
+            "forcedRoll": 8
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "resource distribution executed"
+        ]
+      }
+    },
+    {
+      "id": "normal-04",
+      "kind": "normal",
+      "title": "Build road with resources",
+      "description": "Road placement in main actions stage.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "BUILD_ROAD",
+          "payload": {
+            "edgeId": "e-33-34"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "brick and lumber deducted"
+        ]
+      }
+    },
+    {
+      "id": "normal-05",
+      "kind": "normal",
+      "title": "Build settlement on valid vertex",
+      "description": "Distance rule and connection respected.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "BUILD_SETTLEMENT",
+          "payload": {
+            "intersectionId": "i-35"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "victory points +1"
+        ]
+      }
+    },
+    {
+      "id": "normal-06",
+      "kind": "normal",
+      "title": "Upgrade settlement to city",
+      "description": "City upgrade of own settlement.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "UPGRADE_TO_CITY",
+          "payload": {
+            "intersectionId": "i-35"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "victory points net +1"
+        ]
+      }
+    },
+    {
+      "id": "normal-07",
+      "kind": "normal",
+      "title": "Buy development card",
+      "description": "Draw top card from development deck.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "BUY_DEVELOPMENT_CARD",
+          "payload": {},
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "dev card count increases"
+        ]
+      }
+    },
+    {
+      "id": "normal-08",
+      "kind": "normal",
+      "title": "Trade with bank 4:1",
+      "description": "Valid maritime trade.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "TRADE_WITH_BANK",
+          "payload": {
+            "give": {
+              "wool": 4
+            },
+            "receive": {
+              "ore": 1
+            }
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "bank/resources adjusted"
+        ]
+      }
+    },
+    {
+      "id": "normal-09",
+      "kind": "normal",
+      "title": "Move robber after rolling 7",
+      "description": "Robber relocation and steal flow.",
+      "initialStateRef": "robber_flow",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p3",
+          "type": "MOVE_ROBBER",
+          "payload": {
+            "targetHexId": "h-11"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "robber hex updated"
+        ]
+      }
+    },
+    {
+      "id": "normal-10",
+      "kind": "normal",
+      "title": "End turn at 10 VP wins immediately",
+      "description": "Victory checked at end of action sequence.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "END_TURN",
+          "payload": {
+            "forceVp": 10
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p2"
+        ],
+        "stateAssertions": [
+          "match ends on vp threshold"
+        ]
+      }
+    },
+    {
+      "id": "illegal-01",
+      "kind": "illegal",
+      "title": "Build road not connected",
+      "description": "Road must connect own network.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "BUILD_ROAD",
+          "payload": {
+            "edgeId": "disconnected-edge"
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "ROAD_NOT_CONNECTED"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-02",
+      "kind": "illegal",
+      "title": "Build settlement adjacent to another",
+      "description": "Distance rule violation.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "BUILD_SETTLEMENT",
+          "payload": {
+            "intersectionId": "adjacent-occupied"
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "SETTLEMENT_DISTANCE_RULE"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-03",
+      "kind": "illegal",
+      "title": "Upgrade non-owned settlement",
+      "description": "Only own settlement can be upgraded.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "UPGRADE_TO_CITY",
+          "payload": {
+            "intersectionId": "p1-settlement"
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "NOT_OWNER"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-04",
+      "kind": "illegal",
+      "title": "Roll dice twice",
+      "description": "Only one roll per turn.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "ROLL_DICE",
+          "payload": {
+            "alreadyRolled": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "ALREADY_ROLLED"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "no second distribution"
+        ]
+      }
+    },
+    {
+      "id": "illegal-05",
+      "kind": "illegal",
+      "title": "Play dev card bought same turn",
+      "description": "Cannot play newly bought non-VP card immediately.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "PLAY_DEVELOPMENT_CARD",
+          "payload": {
+            "cardType": "KNIGHT",
+            "boughtThisTurn": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "DEV_CARD_COOLDOWN"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "card remains unplayed"
+        ]
+      }
+    },
+    {
+      "id": "illegal-06",
+      "kind": "illegal",
+      "title": "Trade with bank without ratio",
+      "description": "Missing required ratio/port benefit.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "TRADE_WITH_BANK",
+          "payload": {
+            "give": {
+              "grain": 3
+            },
+            "receive": {
+              "ore": 1
+            }
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "INVALID_TRADE_RATIO"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "resources unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-07",
+      "kind": "illegal",
+      "title": "Move robber to same hex",
+      "description": "Robber must change location.",
+      "initialStateRef": "robber_flow",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p3",
+          "type": "MOVE_ROBBER",
+          "payload": {
+            "targetHexId": "current-robber-hex"
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "ROBBER_SAME_HEX"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "robber position unchanged"
+        ]
+      }
+    },
+    {
+      "id": "illegal-08",
+      "kind": "illegal",
+      "title": "Skip mandatory discard on 7",
+      "description": "Cannot bypass discard stage.",
+      "initialStateRef": "robber_flow",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p3",
+          "type": "MOVE_ROBBER",
+          "payload": {
+            "pendingDiscardPlayers": [
+              "p1"
+            ]
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "DISCARD_PENDING"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "stage remains robber_discard"
+        ]
+      }
+    },
+    {
+      "id": "illegal-09",
+      "kind": "illegal",
+      "title": "End turn before roll",
+      "description": "Main turn must start with roll or knight.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "END_TURN",
+          "payload": {
+            "rolled": false
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "ROLL_REQUIRED"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "turn not advanced"
+        ]
+      }
+    },
+    {
+      "id": "illegal-10",
+      "kind": "illegal",
+      "title": "Action by non-current player",
+      "description": "Turn ownership violation.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p1",
+          "type": "BUILD_ROAD",
+          "payload": {
+            "edgeId": "e-12-13"
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "NOT_PLAYER_TURN"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged"
+        ]
+      }
+    },
+    {
+      "id": "edge-01",
+      "kind": "edge",
+      "title": "Longest road tie keeps current owner",
+      "description": "Tie length does not transfer card.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "BUILD_ROAD",
+          "payload": {
+            "edgeId": "tie-edge",
+            "resultingLongest": 7,
+            "challengerAlso7": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "longest road owner unchanged"
+        ]
+      }
+    },
+    {
+      "id": "edge-02",
+      "kind": "edge",
+      "title": "Largest army overtakes at 3+",
+      "description": "Knight play updates largest army owner.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "PLAY_DEVELOPMENT_CARD",
+          "payload": {
+            "cardType": "KNIGHT",
+            "knightsPlayed": 3
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "largest army owner set to p2"
+        ]
+      }
+    },
+    {
+      "id": "edge-03",
+      "kind": "edge",
+      "title": "Bank resource depletion partial payout",
+      "description": "No one receives resource if bank lacks total needed.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "ROLL_DICE",
+          "payload": {
+            "forcedRoll": 6,
+            "bankInsufficientResource": "brick"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "insufficient resource not distributed"
+        ]
+      }
+    },
+    {
+      "id": "edge-04",
+      "kind": "edge",
+      "title": "Robber steal from single victim card",
+      "description": "Random steal deterministic with one card only.",
+      "initialStateRef": "robber_flow",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p3",
+          "type": "STEAL_RANDOM_CARD",
+          "payload": {
+            "victimId": "p1",
+            "victimHandSize": 1
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "steal transfers the only card"
+        ]
+      }
+    },
+    {
+      "id": "edge-05",
+      "kind": "edge",
+      "title": "Development deck empty on buy",
+      "description": "Buying dev card fails when deck exhausted.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "BUY_DEVELOPMENT_CARD",
+          "payload": {
+            "devDeckRemaining": 0
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "DEV_DECK_EMPTY"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "resources not consumed"
+        ]
+      }
+    },
+    {
+      "id": "edge-06",
+      "kind": "edge",
+      "title": "Setup snake order reverse pass",
+      "description": "Second placement order reverses correctly.",
+      "initialStateRef": "setup_snake",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p4",
+          "type": "PLACE_SETUP_SETTLEMENT",
+          "payload": {
+            "secondPlacementRound": true
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "setup",
+        "winners": [],
+        "stateAssertions": [
+          "turn order reversed in second round"
+        ]
+      }
+    },
+    {
+      "id": "edge-07",
+      "kind": "edge",
+      "title": "Port trade 2:1 specialization",
+      "description": "Player with correct port uses 2:1 ratio.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "TRADE_WITH_BANK",
+          "payload": {
+            "give": {
+              "ore": 2
+            },
+            "receive": {
+              "wool": 1
+            },
+            "portType": "ore_2_1"
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "2:1 port ratio applied"
+        ]
+      }
+    },
+    {
+      "id": "edge-08",
+      "kind": "edge",
+      "title": "Reject port trade without ownership",
+      "description": "Cannot use port ratio without settlement/city at port.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "TRADE_WITH_BANK",
+          "payload": {
+            "give": {
+              "ore": 2
+            },
+            "receive": {
+              "wool": 1
+            },
+            "portType": "ore_2_1",
+            "ownsPort": false
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "PORT_NOT_OWNED"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "trade rejected"
+        ]
+      }
+    },
+    {
+      "id": "edge-09",
+      "kind": "edge",
+      "title": "Exact 10 VP mid-turn immediate win",
+      "description": "Win should trigger without requiring end_turn action.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "BUILD_SETTLEMENT",
+          "payload": {
+            "intersectionId": "vp-win-node",
+            "forceVpAfterBuild": 10
+          },
+          "expect": {
+            "accepted": true
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "finished",
+        "winners": [
+          "p2"
+        ],
+        "stateAssertions": [
+          "game ends immediately on reaching 10"
+        ]
+      }
+    },
+    {
+      "id": "edge-10",
+      "kind": "edge",
+      "title": "Reject stale idempotency action replay",
+      "description": "Duplicate idempotency key should not mutate state twice.",
+      "initialStateRef": "main_turn",
+      "steps": [
+        {
+          "seq": 1,
+          "actorId": "p2",
+          "type": "BUILD_ROAD",
+          "payload": {
+            "edgeId": "e-39-40",
+            "duplicateIdempotency": true
+          },
+          "expect": {
+            "accepted": false,
+            "reasonCode": "IDEMPOTENCY_REPLAY"
+          }
+        }
+      ],
+      "expected": {
+        "terminalPhase": "main_turn",
+        "winners": [],
+        "stateAssertions": [
+          "state unchanged on replay"
+        ]
+      }
+    }
+  ],
+  "sources": [
+    "https://www.catan.com/understand-catan/game-rules",
+    "https://www.catan.com/sites/default/files/2025-03/CN3081%20CATAN%E2%80%93The%20Game%20Rulebook%20secure%20%281%29.pdf",
+    "https://www.catan.com"
+  ]
+}
